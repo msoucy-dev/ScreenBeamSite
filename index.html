@@ -1,55 +1,90 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>ScreenBeam YouTube Stream Controller</title>
-  <style>
-    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: black; }
-    iframe { width: 100%; height: 100%; border: none; }
-  </style>
+<meta charset="utf-8">
+<title>ScreenBeam YouTube Controller</title>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: black;
+}
+
+#player {
+    width: 100%;
+    height: 100%;
+}
+</style>
 </head>
+
 <body>
-  <!-- The YouTube Player will load here -->
-  <div id="player"></div>
 
-  <script>
-    // 1. Load the YouTube Iframe Player API asynchronously
-    var tag = document.createElement('script');
-    tag.src = "https://youtube.com";
-    var firstScriptTag = document.getElementsByTagName('script');
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+<div id="player"></div>
 
-    var player;
-    function onYouTubeIframeAPIReady() {
-      player = new YT.Player('player', {
-        height: '100%',
+<script>
+
+var tag = document.createElement('script');
+tag.src = 'https://www.youtube.com/iframe_api';
+
+var firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+var player;
+
+function onYouTubeIframeAPIReady() {
+
+    player = new YT.Player('player', {
         width: '100%',
-        videoId: 'rFZHOHl-L8A', // <-- MAKE SURE YOUR VIDEO ID IS CORRECT HERE
+        height: '100%',
+        videoId: 'rFZHOHl-L8A',
+
         playerVars: {
-          'autoplay': 1,
-          'mute': 1,        // <-- CRITICAL FIX: Mutes the video so the browser allows autoplay
-          'controls': 0,    // Hides player controls for clean digital signage
-          'rel': 0,
-          'playsinline': 1
+            autoplay: 1,
+            mute: 1,
+            controls: 0,
+            rel: 0,
+            playsinline: 1,
+            fs: 0
         },
+
         events: {
-          'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange
+            onReady: function(event) {
+                event.target.playVideo();
+            },
+
+            onStateChange: function(event) {
+
+                if (event.data === YT.PlayerState.ENDED) {
+
+                    console.log('Video ended');
+
+                    window.location.replace('about:blank');
+                }
+            }
         }
-      });
+    });
+}
+
+setInterval(function() {
+
+    if (!player || typeof player.getPlayerState !== 'function') {
+        return;
     }
 
-    function onPlayerReady(event) {
-      event.target.playVideo();
+    if (player.getPlayerState() === YT.PlayerState.ENDED) {
+
+        console.log('Detected ended state');
+
+        window.location.replace('about:blank');
     }
 
-    // 2. Listen for the video to end
-    function onPlayerStateChange(event) {
-      // YT.PlayerState.ENDED is 0
-      if (event.data === YT.PlayerState.ENDED) {
-        // Redirects to a blank page. ScreenBeam exits signage mode when a URL becomes unreachable.
-        window.location.href = "about:blank";
-      }
-    }
-  </script>
+}, 10000);
+
+</script>
+
 </body>
 </html>
