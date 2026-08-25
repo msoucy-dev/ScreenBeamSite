@@ -15,7 +15,7 @@
     // 1. Load the YouTube Iframe Player API asynchronously
     var tag = document.createElement('script');
     tag.src = "https://youtube.com";
-    var firstScriptTag = document.getElementsByTagName('script')[0];
+    var firstScriptTag = document.getElementsByTagName('script');
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
     var player;
@@ -23,11 +23,13 @@
       player = new YT.Player('player', {
         height: '100%',
         width: '100%',
-        videoId: 'rFZHOHl-L8A', // <-- REPLACE THIS WITH YOUR VIDEO ID
+        videoId: 'rFZHOHl-L8A', // <-- MAKE SURE YOUR VIDEO ID IS CORRECT HERE
         playerVars: {
           'autoplay': 1,
-          'controls': 0, // Hides player controls for a clean signage look
-          'rel': 0
+          'mute': 1,        // <-- CRITICAL FIX: Mutes the video so the browser allows autoplay
+          'controls': 0,    // Hides player controls for clean digital signage
+          'rel': 0,
+          'playsinline': 1
         },
         events: {
           'onReady': onPlayerReady,
@@ -44,7 +46,7 @@
     function onPlayerStateChange(event) {
       // YT.PlayerState.ENDED is 0
       if (event.data === YT.PlayerState.ENDED) {
-        // Redirect to a blank page. This forces ScreenBeam to exit signage mode
+        // Redirects to a blank page. ScreenBeam exits signage mode when a URL becomes unreachable.
         window.location.href = "about:blank";
       }
     }
