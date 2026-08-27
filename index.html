@@ -2,25 +2,23 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>ScreenBeam YouTube Controller</title>
+<title>Live Stream Controller</title>
 
 <style>
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: black;
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    background:black;
+    overflow:hidden;
 }
 
-#player {
-    width: 100%;
-    height: 100%;
+#player{
+    width:100%;
+    height:100%;
 }
 </style>
 </head>
-
 <body>
 
 <div id="player"></div>
@@ -28,61 +26,44 @@ html, body {
 <script>
 
 var tag = document.createElement('script');
-tag.src = 'https://www.youtube.com/iframe_api';
+tag.src = "https://www.youtube.com/iframe_api";
 
-var firstScriptTag = document.getElementsByTagName('script')[0];
-firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+document.head.appendChild(tag);
 
 var player;
 
-function onYouTubeIframeAPIReady() {
+function onYouTubeIframeAPIReady(){
 
-    player = new YT.Player('player', {
-        width: '100%',
-        height: '100%',
-        videoId: '0OD490EGnSE',
-
-        playerVars: {
-            autoplay: 1,
-            mute: 1,
-            controls: 0,
-            rel: 0,
-            playsinline: 1,
-            fs: 0
+    player = new YT.Player('player',{
+        width:'100%',
+        height:'100%',
+        videoId:'rFZHOHl-L8A',
+        playerVars:{
+            autoplay:1,
+            mute:1,
+            controls:0,
+            rel:0,
+            playsinline:1
         },
-
-        events: {
-            onReady: function(event) {
+        events:{
+            onReady:function(event){
                 event.target.playVideo();
             },
-
-            onStateChange: function(event) {
-
-                if (event.data === YT.PlayerState.ENDED) {
-
-                    console.log('Video ended');
-
-                    window.location.replace('about:blank');
-                }
-            }
+            onStateChange:onPlayerStateChange
         }
     });
 }
 
-setInterval(function() {
+function onPlayerStateChange(event){
 
-    if (!player || typeof player.getPlayerState !== 'function') {
-        return;
+    if(event.data === YT.PlayerState.ENDED){
+
+        console.log("Stream ended");
+
+        document.body.innerHTML = "";
+        document.body.style.background = "black";
     }
-
-    if (player.getPlayerState() === YT.PlayerState.ENDED) {
-
-        console.log('Detected ended state');
-
-        window.location.replace('about:blank');
-    }
-
-}, 10000);
+}
 
 </script>
 
