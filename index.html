@@ -2,70 +2,29 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Live Stream Controller</title>
+<title>ScreenBeam Live Stream</title>
 
 <style>
-html,body{
-    margin:0;
-    width:100%;
-    height:100%;
-    background:black;
-    overflow:hidden;
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    overflow: hidden;
 }
 
-#player{
-    width:100%;
-    height:100%;
+iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
 }
 </style>
 </head>
+
 <body>
 
-<div id="player"></div>
-
-<script>
-
-var tag = document.createElement('script');
-tag.src = "https://www.youtube.com/iframe_api";
-
-document.head.appendChild(tag);
-
-var player;
-
-function onYouTubeIframeAPIReady(){
-
-    player = new YT.Player('player',{
-        width:'100%',
-        height:'100%',
-        videoId:'rFZHOHl-L8A',
-        playerVars:{
-            autoplay:1,
-            mute:1,
-            controls:0,
-            rel:0,
-            playsinline:1
-        },
-        events:{
-            onReady:function(event){
-                event.target.playVideo();
-            },
-            onStateChange:onPlayerStateChange
-        }
-    });
-}
-
-function onPlayerStateChange(event){
-
-    if(event.data === YT.PlayerState.ENDED){
-
-        console.log("Stream ended");
-
-        document.body.innerHTML = "";
-        document.body.style.background = "black";
-    }
-}
-
-</script>
-
-</body>
-</html>
+<iframe
+    src="https://www.youtube.com/embed/live_stream?channel=UCSJ4gkVC6NrvII8umztf0Ow&autoplay=1&mute=1&controls=0"
+    allow="autoplay; encrypted-media"
+    allow
