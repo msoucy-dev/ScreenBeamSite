@@ -7,28 +7,87 @@
 <style>
 html, body {
     margin: 0;
-    padding: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden;
     background: black;
+    overflow: hidden;
 }
 
-iframe {
+#player {
     width: 100%;
     height: 100%;
-    border: none;
 }
 </style>
 </head>
 
 <body>
 
-<iframe
-    src="https://www.youtube.com/channel/UCSJ4gkVC6NrvII8umztf0Ow/live"
-    allow="autoplay; encrypted-media"
-    allowfullscreen>
-</iframe>
+<div id="player"></div>
+
+<script>
+
+const API_KEY = "AIzaSyAHl7ica8ZkMg-Fe1Nac_RBWgg1O0GWwHQ";
+const CHANNEL_ID = "UCSJ4gkVC6NrvII8umztf0Ow";
+
+let currentVideo = "";
+
+// Find currently live video
+async function checkLiveStream() {
+
+    try {
+
+        const response = await fetch(
+            "https://www.googleapis.com/youtube/v3/search?" +
+            "part=snippet" +
+            "&channelId=" + CHANNEL_ID +
+            "&eventType=live" +
+            "&type=video" +
+            "&key=" + API_KEY
+        );
+
+        const data = await response.json();
+
+        if (data.items && data.items.length > 0) {
+
+            const videoId = data.items[0].id.videoId;
+
+            // Only reload if stream changed
+            if (videoId !== currentVideo) {
+
+                currentVideo = videoId;
+
+                document.getElementById("player").innerHTML =
+                    `<iframe
+                        width="100%"
+                        height="100%"
+                        src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0"
+                        frameborder="0"
+                        allow="autoplay; encrypted-media"
+                        allowfullscreen>
+                    </iframe>`;
+            }
+
+        } else {
+
+            currentVideo = "";
+
+            document.getElementById("player").innerHTML = "";
+            document.body.style.background = "black";
+        }
+
+    } catch (err) {
+
+        console.log(err);
+    }
+}
+
+// Check immediately
+checkLiveStream();
+
+// Then check every minute
+setInterval(checkLiveStream, 60000);
+
+</script>
 
 </body>
 </html>
