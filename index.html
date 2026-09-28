@@ -31,12 +31,12 @@ html, body {
 <div id="player"></div>
 
 <script>
+
 const API_KEY = "AIzaSyBS2k8V65d4UCI0Cu9LvG2bJmvemQg7-Lw";
 const CHANNEL_ID = "UCUuwxQRny4pdc22UUJ2kbdQ";
 
 let currentVideo = "";
 let player = null;
-let pendingVideoId = null;
 
 
 // --------------------------------------------------
@@ -44,25 +44,26 @@ let pendingVideoId = null;
 // --------------------------------------------------
 
 const tag = document.createElement("script");
+
 tag.src = "https://www.youtube.com/iframe_api";
 
 document.head.appendChild(tag);
 
 
 // --------------------------------------------------
-// YouTube API ready
+// YouTube API loaded
 // --------------------------------------------------
 
 function onYouTubeIframeAPIReady() {
 
-    console.log("YouTube IFrame API loaded");
+    console.log("YouTube API loaded.");
 
     checkLiveStream();
 }
 
 
 // --------------------------------------------------
-// Find currently live stream
+// Find current live stream
 // --------------------------------------------------
 
 async function checkLiveStream() {
@@ -80,125 +81,124 @@ async function checkLiveStream() {
 
         const data = await response.json();
 
-        if (!data.items || data.items.length === 0) {
+
+        if (data.items && data.items.length > 0) {
+
+            const videoId = data.items[0].id.videoId;
+
+            console.log("Live stream:", videoId);
+
+
+            // Don't reload the same stream
+            if (videoId === currentVideo) {
+                return;
+            }
+
+
+            currentVideo = videoId;
+
+
+            // Destroy previous player
+            if (player) {
+                player.destroy();
+                player = null;
+            }
+
+
+            // Create new player
+            player = new YT.Player("player", {
+
+                videoId: videoId,
+
+                playerVars: {
+                    autoplay: 1,
+                    controls: 0,
+                    playsinline: 1,
+                    rel: 0
+                },
+
+                events: {
+
+                    onReady: function(event) {
+
+                        console.log("YouTube player ready.");
+
+                        // Attempt autoplay with audio
+                        event.target.unMute();
+                        event.target.setVolume(100);
+                        event.target.playVideo();
+
+                    },
+
+
+                    onStateChange: function(event) {
+
+                        if (event.data === YT.PlayerState.PLAYING) {
+
+                            console.log("VIDEO PLAYING");
+
+                            // Make sure audio is enabled
+                            event.target.unMute();
+                            event.target.setVolume(100);
+
+                        }
+
+                    },
+
+
+                    onAutoplayBlocked: function() {
+
+                        console.log(
+                            "AUTOPLAY WITH AUDIO WAS BLOCKED"
+                        );
+
+                    },
+
+
+                    onError: function(event) {
+
+                        console.log(
+                            "YouTube error:",
+                            event.data
+                        );
+
+                    }
+
+                }
+
+            });
+
+        }
+
+        else {
 
             console.log("No live stream currently active.");
 
             currentVideo = "";
 
             if (player) {
+
                 player.destroy();
                 player = null;
+
             }
 
             document.getElementById("player").innerHTML = "";
 
-            return;
         }
-
-
-        const videoId = data.items[0].id.videoId;
-
-        console.log("Current live stream:", videoId);
-
-
-        // Don't reload the player if it is already playing
-        if (videoId === currentVideo) {
-            return;
-        }
-
-
-        currentVideo = videoId;
-        pendingVideoId = videoId;
-
-
-        createPlayer(videoId);
-
-    } catch (err) {
-
-        console.error("Live stream check failed:", err);
 
     }
+
+    catch (error) {
+
+        console.log("API error:", error);
+
+    }
+
 }
 
 
-// --------------------------------------------------
-// Create YouTube player
-// --------------------------------------------------
-
-function createPlayer(videoId) {
-
-    if (player) {
-
-        player.destroy();
-        player = null;
-    }
-
-
-    player = new YT.Player("player", {
-
-        videoId: videoId,
-
-        playerVars: {
-            autoplay: 1,
-            controls: 0,
-            playsinline: 1,
-            rel: 0,
-            enablejsapi: 1,
-            origin: window.location.origin
-        },
-
-        events: {
-
-            onReady: function(event) {
-
-                console.log("YouTube player ready.");
-
-                // Attempt to play WITH AUDIO
-                event.target.unMute();
-                event.target.setVolume(100);
-                event.target.playVideo();
-
-            },
-
-            onStateChange: function(event) {
-
-                if (event.data === YT.PlayerState.PLAYING) {
-
-                    console.log("Live stream is playing.");
-
-                    // Make sure audio is enabled
-                    event.target.unMute();
-                    event.target.setVolume(100);
-                }
-
-            },
-
-            onAutoplayBlocked: function() {
-
-                console.warn(
-                    "Autoplay with audio was blocked by the browser."
-                );
-
-            },
-
-            onError: function(event) {
-
-                console.error(
-                    "YouTube player error:",
-                    event.data
-                );
-
-            }
-        }
-    });
-}
-
-
-// --------------------------------------------------
-// Check for a new live stream every minute
-// --------------------------------------------------
-
+// Check every minute
 setInterval(checkLiveStream, 60000);
 
 </script>
