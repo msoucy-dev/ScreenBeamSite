@@ -36,18 +36,12 @@ const API_KEY = "AIzaSyBS2k8V65d4UCI0Cu9LvG2bJmvemQg7-Lw";
 const CHANNEL_ID = "UCUuwxQRny4pdc22UUJ2kbdQ";
 
 let currentVideo = "";
-let firstCheck = true;
 
 
-// --------------------------------------------------
-// Find the current live stream
-// --------------------------------------------------
-
+// Find currently live video
 async function checkLiveStream() {
 
     try {
-
-        console.log("Checking for current live stream...");
 
         const response = await fetch(
             "https://www.googleapis.com/youtube/v3/search?" +
@@ -62,6 +56,7 @@ async function checkLiveStream() {
 
         console.log("YouTube API response:", data);
 
+
         if (data.items && data.items.length > 0) {
 
             const videoId = data.items[0].id.videoId;
@@ -69,68 +64,47 @@ async function checkLiveStream() {
             console.log("Current live video:", videoId);
 
 
-            // New stream detected
+            // Only reload if the live stream changed
             if (videoId !== currentVideo) {
-
-                console.log("Loading live stream:", videoId);
 
                 currentVideo = videoId;
 
-                loadVideo(videoId);
+                document.getElementById("player").innerHTML =
+                    `<iframe
+                        src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=0&playsinline=1"
+                        width="100%"
+                        height="100%"
+                        frameborder="0"
+                        allow="autoplay; encrypted-media; picture-in-picture"
+                        allowfullscreen>
+                    </iframe>`;
+
             }
 
         } else {
 
             console.log("No live stream currently active.");
 
-            if (currentVideo !== "") {
-                currentVideo = "";
-                document.getElementById("player").innerHTML = "";
-            }
+            currentVideo = "";
+
+            document.getElementById("player").innerHTML = "";
+
         }
 
     } catch (err) {
 
-        console.error("Error checking YouTube:", err);
+        console.error("Error checking live stream:", err);
 
     }
-
 }
 
 
-// --------------------------------------------------
-// Load YouTube video
-// --------------------------------------------------
-
-function loadVideo(videoId) {
-
-    const player = document.getElementById("player");
-
-    player.innerHTML =
-        `<iframe
-            src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=0&playsinline=1&rel=0"
-            width="100%"
-            height="100%"
-            frameborder="0"
-            allow="autoplay; encrypted-media; picture-in-picture"
-            allowfullscreen>
-        </iframe>`;
-
-}
-
-
-// --------------------------------------------------
 // Check immediately
-// --------------------------------------------------
-
 checkLiveStream();
 
 
-// --------------------------------------------------
-// Check for a new stream every minute
-// --------------------------------------------------
-
-setInterval(checkLiveStream, 30000);
+// Check every minute
+setInterval(checkLiveStream, 60000);
 
 </script>
 
